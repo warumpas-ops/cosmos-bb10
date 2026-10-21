@@ -140,13 +140,23 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
         }
 
         try {
-            mediaPlayer = MediaPlayer.create(this, soundRes);
-            if (mediaPlayer != null) {
+            android.content.res.AssetFileDescriptor afd = getResources().openRawResourceFd(soundRes);
+            if (afd != null) {
+                mediaPlayer = new MediaPlayer();
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                mediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+                afd.close();
                 mediaPlayer.setLooping(true);
+                mediaPlayer.prepare();
                 mediaPlayer.start();
             } else {
-                startFallbackRingtone();
+                mediaPlayer = MediaPlayer.create(this, soundRes);
+                if (mediaPlayer != null) {
+                    mediaPlayer.setLooping(true);
+                    mediaPlayer.start();
+                } else {
+                    startFallbackRingtone();
+                }
             }
         } catch (Exception e) {
             startFallbackRingtone();

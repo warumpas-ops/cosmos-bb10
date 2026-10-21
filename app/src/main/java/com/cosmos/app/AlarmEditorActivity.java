@@ -1,6 +1,7 @@
 package com.cosmos.app;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -301,15 +302,29 @@ public class AlarmEditorActivity extends Activity {
         }
 
         try {
+            // Unmute and ensure media volume is audible
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                int current = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                if (current < max / 2) {
+                    am.setStreamVolume(AudioManager.STREAM_MUSIC, max * 3 / 4, 0);
+                }
+            }
+
             testPlayer = MediaPlayer.create(this, soundRes);
             if (testPlayer != null) {
-                testPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 testPlayer.setLooping(true);
                 testPlayer.start();
                 btnTestSound.setText("[ ■ STOP ]");
-                btnTestSound.setBackgroundColor(Color.parseColor("#FF5555"));
+                btnTestSound.setBackgroundColor(Color.parseColor("#FF4444"));
+                btnTestSound.setTextColor(Color.parseColor("#FFFFFF"));
+            } else {
+                Toast.makeText(this, "Audio resource unavailable", Toast.LENGTH_SHORT).show();
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            Toast.makeText(this, "Audio error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void restartTestSoundIfPlaying() {
@@ -322,6 +337,7 @@ public class AlarmEditorActivity extends Activity {
         if (testPlayer != null) {
             try {
                 if (testPlayer.isPlaying()) testPlayer.stop();
+                testPlayer.reset();
                 testPlayer.release();
             } catch (Exception e) {}
             testPlayer = null;
@@ -329,6 +345,7 @@ public class AlarmEditorActivity extends Activity {
         if (btnTestSound != null) {
             btnTestSound.setText("[ ▶ TEST ]");
             btnTestSound.setBackgroundColor(Color.parseColor("#252528"));
+            btnTestSound.setTextColor(Color.parseColor("#F2F2F2"));
         }
     }
 
