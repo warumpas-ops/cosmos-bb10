@@ -14,6 +14,7 @@ public class Alarm {
     public boolean[] repeatDays; // 0=Sun, 1=Mon, ..., 6=Sat
     public MissionType missionType;
     public int missionCount; // e.g. 3 problems, or 30 shakes
+    public String soundType; // "digital", "siren", "reveille", "buzzer"
 
     public Alarm() {
         this.id = "alarm_" + System.currentTimeMillis();
@@ -24,6 +25,7 @@ public class Alarm {
         this.repeatDays = new boolean[]{false, true, true, true, true, true, false}; // Mon-Fri by default
         this.missionType = MissionType.MATH;
         this.missionCount = 3;
+        this.soundType = "digital";
     }
 
     public String formattedTime() {
@@ -69,6 +71,13 @@ public class Alarm {
         }
     }
 
+    public String soundName() {
+        if ("siren".equals(soundType)) return "Siren";
+        if ("reveille".equals(soundType)) return "Reveille";
+        if ("buzzer".equals(soundType)) return "Klaxon Buzzer";
+        return "Digital";
+    }
+
     public long calculateNextTriggerMs() {
         Calendar now = Calendar.getInstance();
         Calendar target = Calendar.getInstance();
@@ -109,6 +118,7 @@ public class Alarm {
             obj.put("label", label);
             obj.put("missionType", missionType.name());
             obj.put("missionCount", missionCount);
+            obj.put("soundType", soundType);
             JSONArray arr = new JSONArray();
             for (boolean b : repeatDays) arr.put(b);
             obj.put("repeatDays", arr);
@@ -129,6 +139,7 @@ public class Alarm {
             a.missionType = MissionType.MATH;
         }
         a.missionCount = obj.optInt("missionCount", 3);
+        a.soundType = obj.optString("soundType", "digital");
         JSONArray arr = obj.optJSONArray("repeatDays");
         if (arr != null) {
             for (int i = 0; i < Math.min(7, arr.length()); i++) {

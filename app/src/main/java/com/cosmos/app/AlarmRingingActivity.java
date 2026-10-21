@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -30,7 +31,8 @@ import java.util.Random;
 public class AlarmRingingActivity extends Activity implements SensorEventListener {
 
     private Alarm alarm;
-    private Ringtone ringtone;
+    private MediaPlayer mediaPlayer;
+    private Ringtone fallbackRingtone;
     private Vibrator vibrator;
     private final Handler handler = new Handler();
 
@@ -63,13 +65,11 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
         "NEW DAY NEW BEGINNING",
         "WAKE UP AND CONQUER",
         "TIME TO FOCUS",
-        "THE UNIVERSE AWAITS"
+        "THE UNIVERSE AWAITS",
+        "BREATHE DEEP AND STEP FORWARD",
+        "EVERY SUNRISE IS A FRESH START"
     };
     private String targetQuote = "RISE AND SHINE";
-
-    // Emergency Hold State
-    private boolean isHoldingEmergency = false;
-    private int holdProgress = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +102,7 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
         missionContainer = (LinearLayout) findViewById(R.id.missionContainer);
 
         tvAlarmTime.setText(alarm.formattedTime());
-        tvAlarmLabel.setText("[ " + alarm.label + " ]");
+        tvAlarmLabel.setText("[ " + alarm.label + " · " + alarm.soundName() + " ]");
 
         startAlarmSoundAndVibration();
         setupMission();
@@ -120,28 +120,71 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
     }
 
     private void startAlarmSoundAndVibration() {
+        // Force Alarm volume to MAXIMUM (Alarmy loud mode)
+        try {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager != null) {
+                int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVol, 0);
+            }
+        } catch (Exception e) {}
+
+        // Select the chosen loud alarm audio
+        int soundRes = R.raw.alarm_digital_screamer;
+        if ("siren".equals(alarm.soundType)) {
+            soundRes = R.raw.alarm_nuclear_siren;
+        } else if ("reveille".equals(alarm.soundType)) {
+            soundRes = R.raw.alarm_military_reveille;
+        } else if ("buzzer".equals(alarm.soundType)) {
+            soundRes = R.raw.alarm_emergency_buzzer;
+        }
+
+        try {
+            mediaPlayer = MediaPlayer.create(this, soundRes);
+            if (mediaPlayer != null) {
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                mediaPlayer.setLooping(true);
+                mediaPlayer.start();
+            } else {
+                startFallbackRingtone();
+            }
+        } catch (Exception e) {
+            startFallbackRingtone();
+        }
+
+        // Relentless looping vibration
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null) {
+            long[] pattern = {0, 600, 300, 600, 300, 800};
+            vibrator.vibrate(pattern, 0); // 0 = loop forever
+        }
+    }
+
+    private void startFallbackRingtone() {
         try {
             Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
             if (alarmUri == null) {
                 alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             }
-            ringtone = RingtoneManager.getRingtone(this, alarmUri);
-            if (ringtone != null) {
-                ringtone.setStreamType(AudioManager.STREAM_ALARM);
-                ringtone.play();
+            fallbackRingtone = RingtoneManager.getRingtone(this, alarmUri);
+            if (fallbackRingtone != null) {
+                fallbackRingtone.setStreamType(AudioManager.STREAM_ALARM);
+                fallbackRingtone.play();
             }
         } catch (Exception e) {}
-
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        if (vibrator != null) {
-            long[] pattern = {0, 600, 400, 600, 400, 800};
-            vibrator.vibrate(pattern, 0); // 0 = loop forever
-        }
     }
 
     private void stopAlarmSoundAndVibration() {
-        if (ringtone != null && ringtone.isPlaying()) {
-            try { ringtone.stop(); } catch (Exception e) {}
+        if (mediaPlayer != null) {
+            try {
+                if (mediaPlayer.isPlaying()) mediaPlayer.stop();
+                mediaPlayer.release();
+            } catch (Exception e) {}
+            mediaPlayer = null;
+        }
+        if (fallbackRingtone != null && fallbackRingtone.isPlaying()) {
+            try { fallbackRingtone.stop(); } catch (Exception e) {}
+            fallbackRingtone = null;
         }
         if (vibrator != null) {
             try { vibrator.cancel(); } catch (Exception e) {}
@@ -185,54 +228,66 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
 
     // --- MATH MISSION ---
     private void setupMathProblem() {
-        tvMissionStatus.setText(String.format("MISSION: MATH (%d / %d)", mathSolved + 1, mathTotal));
-        Random rnd = new Random();
-        int a = rnd.nextInt(40) + 12;
-        int b = rnd.nextInt(40) + 12;
-        expectedAnswer = a + b;
-
-        tvProblem.setText(String.format("%d + %d = [ ? ]", a, b));
-        tvProblem.setVisibility(View.VISIBLE);
+        tvMissionStatus.setText(String.format("MATH MISSION [%d / %d]", mathSolved, mathTotal));
         etInput.setVisibility(View.VISIBLE);
         etInput.setText("");
-        etInput.setHint("type answer & press Enter");
-        etInput.requestFocus();
+        etInput.setHint("answer & press enter");
+        etInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
 
-        btnAction.setText("[ SUBMIT ]");
+        Random r = new Random();
+        int a = r.nextInt(40) + 12;
+        int b = r.nextInt(35) + 8;
+        int op = r.nextInt(3); // 0: +, 1: -, 2: *
+        String opStr;
+
+        if (op == 0) {
+            expectedAnswer = a + b;
+            opStr = "+";
+        } else if (op == 1) {
+            expectedAnswer = a - b;
+            opStr = "-";
+        } else {
+            a = r.nextInt(12) + 4;
+            b = r.nextInt(9) + 3;
+            expectedAnswer = a * b;
+            opStr = "×";
+        }
+
+        tvProblem.setVisibility(View.VISIBLE);
+        tvProblem.setText(a + " " + opStr + " " + b + " = ?");
+        btnAction.setText("[ SUBMIT ANSWER ]");
+
+        etInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                checkMathAnswer();
+                return true;
+            }
+        });
+
         btnAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkMathAnswer();
             }
         });
-
-        etInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-                    checkMathAnswer();
-                    return true;
-                }
-                return false;
-            }
-        });
     }
 
     private void checkMathAnswer() {
-        String ansStr = etInput.getText().toString().trim();
+        String text = etInput.getText().toString().trim();
         try {
-            int ans = Integer.parseInt(ansStr);
+            int ans = Integer.parseInt(text);
             if (ans == expectedAnswer) {
                 mathSolved++;
                 if (mathSolved >= mathTotal) {
-                    Toast.makeText(this, "Wake-up Mission Complete!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Mission Complete! Good morning!", Toast.LENGTH_SHORT).show();
                     dismissAlarm();
                 } else {
                     Toast.makeText(this, "Correct! Next problem...", Toast.LENGTH_SHORT).show();
                     setupMathProblem();
                 }
             } else {
-                Toast.makeText(this, "Wrong! Try again", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Incorrect! Try again", Toast.LENGTH_SHORT).show();
                 etInput.setText("");
             }
         } catch (Exception e) {
@@ -242,11 +297,12 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
 
     // --- SHAKE MISSION ---
     private void setupShakeMission() {
-        tvMissionStatus.setText(String.format("MISSION: SHAKE DEVICE (0 / %d)", shakeTotal));
-        tvProblem.setText("Shake your BlackBerry to wake up!");
+        tvMissionStatus.setText(String.format("SHAKE MISSION [%d / %d]", shakeCount, shakeTotal));
         tvProblem.setVisibility(View.VISIBLE);
+        tvProblem.setText("SHAKE YOUR PHONE VIGOROUSLY");
         etInput.setVisibility(View.GONE);
-        btnAction.setVisibility(View.GONE);
+        btnAction.setText(String.format("[ %d / %d SHAKES ]", shakeCount, shakeTotal));
+        btnAction.setEnabled(false);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
@@ -266,15 +322,17 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
         float z = event.values[2];
 
         long now = System.currentTimeMillis();
-        if ((now - lastShakeTime) > 120) {
-            float delta = Math.abs(x + y + z - lastX - lastY - lastZ);
-            if (delta > 14) { // Shake detected
+        if ((now - lastShakeTime) > 180) {
+            float speed = Math.abs(x + y + z - lastX - lastY - lastZ);
+            if (speed > 14.0f) {
                 lastShakeTime = now;
                 shakeCount++;
-                tvMissionStatus.setText(String.format("MISSION: SHAKE (%d / %d)", shakeCount, shakeTotal));
+                btnAction.setText(String.format("[ %d / %d SHAKES ]", shakeCount, shakeTotal));
+                tvMissionStatus.setText(String.format("SHAKE MISSION [%d / %d]", shakeCount, shakeTotal));
 
                 if (shakeCount >= shakeTotal) {
                     if (sensorManager != null) sensorManager.unregisterListener(this);
+                    Toast.makeText(this, "Wake Up Complete!", Toast.LENGTH_SHORT).show();
                     dismissAlarm();
                 }
             }
@@ -289,44 +347,41 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
 
     // --- TYPING MISSION ---
     private void setupTypingMission() {
-        Random rnd = new Random();
-        targetQuote = QUOTES[rnd.nextInt(QUOTES.length)];
+        Random r = new Random();
+        targetQuote = QUOTES[r.nextInt(QUOTES.length)];
 
-        tvMissionStatus.setText("MISSION: TYPE QUOTE");
-        tvProblem.setText("\"" + targetQuote + "\"");
+        tvMissionStatus.setText("[ TYPING MISSION ]");
         tvProblem.setVisibility(View.VISIBLE);
+        tvProblem.setText("\"" + targetQuote + "\"");
         etInput.setVisibility(View.VISIBLE);
         etInput.setText("");
-        etInput.setHint("type quote exactly");
-        etInput.requestFocus();
-
+        etInput.setHint("type exact quote above");
+        etInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
         btnAction.setText("[ SUBMIT ]");
+
         btnAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkTypingAnswer();
+                checkTypingQuote();
             }
         });
 
         etInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-                    checkTypingAnswer();
-                    return true;
-                }
-                return false;
+                checkTypingQuote();
+                return true;
             }
         });
     }
 
-    private void checkTypingAnswer() {
+    private void checkTypingQuote() {
         String entered = etInput.getText().toString().trim();
         if (entered.equalsIgnoreCase(targetQuote)) {
             Toast.makeText(this, "Mission Complete! Have a great day!", Toast.LENGTH_SHORT).show();
             dismissAlarm();
         } else {
-            Toast.makeText(this, "Quote does not match! Try again", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Quote doesn't match, keep typing!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -335,13 +390,16 @@ public class AlarmRingingActivity extends Activity implements SensorEventListene
         if (sensorManager != null) {
             sensorManager.unregisterListener(this);
         }
+        // Reschedule recurring alarms or disable one-time alarms
+        boolean hasRepeat = false;
+        for (boolean b : alarm.repeatDays) if (b) hasRepeat = true;
+        if (!hasRepeat) {
+            alarm.enabled = false;
+            AlarmStorage s = new AlarmStorage(this);
+            s.updateAlarm(alarm);
+        }
+        AlarmScheduler.rescheduleAll(this);
         finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Prevent accidental dismiss via back key
-        Toast.makeText(this, "Complete mission to dismiss alarm!", Toast.LENGTH_SHORT).show();
     }
 
     @Override

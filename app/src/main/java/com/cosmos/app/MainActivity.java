@@ -185,7 +185,7 @@ public class MainActivity extends Activity {
 
             tvTime.setText(alarm.formattedTime());
             tvLabel.setText(alarm.label);
-            tvSub.setText(alarm.repeatDescription() + " · " + alarm.missionDescription());
+            tvSub.setText(alarm.repeatDescription() + " · " + alarm.missionDescription() + " · " + alarm.soundName());
 
             if (alarm.enabled) {
                 tvTime.setTextColor(Color.parseColor("#F2F2F2"));

@@ -6,49 +6,55 @@
     android:orientation="vertical"
     android:background="@color/bg">
 
-    <!-- Header -->
-    <LinearLayout
+    <!-- Top Action Bar -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:layout_height="52dp"
         android:background="@color/header_bg"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp">
 
         <Button
-            android:id="@+id/btnBack"
+            android:id="@+id/btnCancel"
             android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:text="[&lt; back]"
-            android:background="@null"
+            android:layout_height="34dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:text="CANCEL"
             android:textColor="@color/text_secondary"
-            android:textSize="13sp"/>
+            android:background="@android:color/transparent"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/tvEditorTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="[set alarm]"
+            android:layout_centerInParent="true"
+            android:text="SET ALARM"
             android:textColor="@color/text_primary"
-            android:textSize="15sp"
-            android:gravity="center"/>
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:text="[save]"
-            android:background="@null"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp"/>
-    </LinearLayout>
+            android:layout_height="34dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="SAVE"
+            android:textColor="@color/bg"
+            android:background="@color/text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/divider" />
 
+    <!-- Content Form in ScrollView for 720x720 Square Screen -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -60,19 +66,19 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- TimePicker -->
+            <!-- Time Picker -->
             <TimePicker
                 android:id="@+id/timePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="14dp" />
 
-            <!-- Alarm Label -->
+            <!-- Alarm Label Input -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LABEL:"
+                android:text="ALARM LABEL:"
                 android:textColor="@color/text_secondary"
                 android:textSize="11sp"
                 android:textStyle="bold"
@@ -90,7 +96,7 @@
                 android:paddingRight="12dp"
                 android:singleLine="true"
                 android:textSize="14sp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="14dp" />
 
             <!-- Repeat Days -->
             <TextView
@@ -104,9 +110,9 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="14dp">
 
                 <Button android:id="@+id/btnDaySun" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="S" android:textSize="12sp" android:layout_marginRight="2dp"/>
                 <Button android:id="@+id/btnDayMon" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="M" android:textSize="12sp" android:layout_marginRight="2dp"/>
@@ -115,6 +121,47 @@
                 <Button android:id="@+id/btnDayThu" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="T" android:textSize="12sp" android:layout_marginRight="2dp"/>
                 <Button android:id="@+id/btnDayFri" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="F" android:textSize="12sp" android:layout_marginRight="2dp"/>
                 <Button android:id="@+id/btnDaySat" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="S" android:textSize="12sp"/>
+            </LinearLayout>
+
+            <!-- Loud Alarm Sounds Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="LOUD ALARM SOUND:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnTestSound"
+                    android:layout_width="wrap_content"
+                    android:layout_height="26dp"
+                    android:text="[ ▶ TEST ]"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_primary"
+                    android:background="@color/divider"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:orientation="horizontal"
+                android:layout_marginBottom="14dp">
+
+                <Button android:id="@+id/btnSoundDigital" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="Digital" android:textSize="11sp" android:layout_marginRight="3dp"/>
+                <Button android:id="@+id/btnSoundSiren" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="Siren" android:textSize="11sp" android:layout_marginRight="3dp"/>
+                <Button android:id="@+id/btnSoundReveille" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="Reveille" android:textSize="11sp" android:layout_marginRight="3dp"/>
+                <Button android:id="@+id/btnSoundBuzzer" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="Buzzer" android:textSize="11sp"/>
             </LinearLayout>
 
             <!-- Mission Selection -->
@@ -129,14 +176,14 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="38dp"
+                android:layout_height="36dp"
                 android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="10dp">
 
-                <Button android:id="@+id/btnMissionMath" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Math ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
-                <Button android:id="@+id/btnMissionShake" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Shake ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
-                <Button android:id="@+id/btnMissionTyping" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Type ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
-                <Button android:id="@+id/btnMissionNormal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Standard ]" android:textSize="12sp"/>
+                <Button android:id="@+id/btnMissionMath" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Math ]" android:textSize="11sp" android:layout_marginRight="3dp"/>
+                <Button android:id="@+id/btnMissionShake" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Shake ]" android:textSize="11sp" android:layout_marginRight="3dp"/>
+                <Button android:id="@+id/btnMissionTyping" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Type ]" android:textSize="11sp" android:layout_marginRight="3dp"/>
+                <Button android:id="@+id/btnMissionNormal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Standard ]" android:textSize="11sp"/>
             </LinearLayout>
 
             <!-- Mission Parameters (Count) -->
@@ -145,7 +192,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="14dp">
 
                 <TextView
                     android:id="@+id/tvCountLabel"
@@ -159,12 +206,12 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="36dp"
+                    android:layout_height="34dp"
                     android:orientation="horizontal">
 
-                    <Button android:id="@+id/btnCount1" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 1x ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
-                    <Button android:id="@+id/btnCount3" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 3x ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
-                    <Button android:id="@+id/btnCount5" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 5x ]" android:textSize="12sp"/>
+                    <Button android:id="@+id/btnCount1" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 1x ]" android:textSize="11sp" android:layout_marginRight="4dp"/>
+                    <Button android:id="@+id/btnCount3" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 3x ]" android:textSize="11sp" android:layout_marginRight="4dp"/>
+                    <Button android:id="@+id/btnCount5" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 5x ]" android:textSize="11sp"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -172,13 +219,13 @@
             <Button
                 android:id="@+id/btnDelete"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="38dp"
                 android:text="[ DELETE ALARM ]"
                 android:textColor="#FF5555"
                 android:background="@color/surface"
-                android:textSize="13sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="24dp" />
+                android:textSize="12sp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp" />
 
         </LinearLayout>
     </ScrollView>

@@ -69,6 +69,10 @@ public class AlarmStorage {
         return null;
     }
 
+    public void saveAlarm(Alarm a) {
+        updateAlarm(a);
+    }
+
     public void updateAlarm(Alarm updated) {
         List<Alarm> list = loadAlarms();
         for (int i = 0; i < list.size(); i++) {

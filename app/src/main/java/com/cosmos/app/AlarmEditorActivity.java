@@ -2,6 +2,8 @@ package com.cosmos.app;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -33,9 +35,18 @@ public class AlarmEditorActivity extends Activity {
     private Button btnCount5;
     private int selectedCount = 3;
 
+    // Loud Alarm Sound Buttons
+    private Button btnSoundDigital;
+    private Button btnSoundSiren;
+    private Button btnSoundReveille;
+    private Button btnSoundBuzzer;
+    private Button btnTestSound;
+    private String selectedSound = "digital";
+    private MediaPlayer testPlayer;
+
     private Button btnDelete;
     private Button btnSave;
-    private Button btnBack;
+    private Button btnCancel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +69,7 @@ public class AlarmEditorActivity extends Activity {
         etLabel = (EditText) findViewById(R.id.etLabel);
         btnDelete = (Button) findViewById(R.id.btnDelete);
         btnSave = (Button) findViewById(R.id.btnSave);
-        btnBack = (Button) findViewById(R.id.btnBack);
+        btnCancel = (Button) findViewById(R.id.btnCancel);
 
         // Days
         dayButtons[0] = (Button) findViewById(R.id.btnDaySun);
@@ -68,6 +79,13 @@ public class AlarmEditorActivity extends Activity {
         dayButtons[4] = (Button) findViewById(R.id.btnDayThu);
         dayButtons[5] = (Button) findViewById(R.id.btnDayFri);
         dayButtons[6] = (Button) findViewById(R.id.btnDaySat);
+
+        // Sounds
+        btnSoundDigital = (Button) findViewById(R.id.btnSoundDigital);
+        btnSoundSiren = (Button) findViewById(R.id.btnSoundSiren);
+        btnSoundReveille = (Button) findViewById(R.id.btnSoundReveille);
+        btnSoundBuzzer = (Button) findViewById(R.id.btnSoundBuzzer);
+        btnTestSound = (Button) findViewById(R.id.btnTestSound);
 
         // Missions
         btnMissionMath = (Button) findViewById(R.id.btnMissionMath);
@@ -89,6 +107,9 @@ public class AlarmEditorActivity extends Activity {
         System.arraycopy(alarm.repeatDays, 0, selectedDays, 0, 7);
         updateDayButtons();
 
+        selectedSound = alarm.soundType != null ? alarm.soundType : "digital";
+        updateSoundButtons();
+
         selectedMission = alarm.missionType;
         selectedCount = alarm.missionCount;
         updateMissionButtons();
@@ -105,6 +126,47 @@ public class AlarmEditorActivity extends Activity {
                 }
             });
         }
+
+        // Sound listeners
+        btnSoundDigital.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedSound = "digital";
+                updateSoundButtons();
+                restartTestSoundIfPlaying();
+            }
+        });
+        btnSoundSiren.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedSound = "siren";
+                updateSoundButtons();
+                restartTestSoundIfPlaying();
+            }
+        });
+        btnSoundReveille.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedSound = "reveille";
+                updateSoundButtons();
+                restartTestSoundIfPlaying();
+            }
+        });
+        btnSoundBuzzer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedSound = "buzzer";
+                updateSoundButtons();
+                restartTestSoundIfPlaying();
+            }
+        });
+
+        btnTestSound.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleTestSound();
+            }
+        });
 
         // Mission listeners
         btnMissionMath.setOnClickListener(new View.OnClickListener() {
@@ -163,6 +225,7 @@ public class AlarmEditorActivity extends Activity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopTestSound();
                 storage.deleteAlarm(alarm.id);
                 AlarmScheduler.rescheduleAll(AlarmEditorActivity.this);
                 Toast.makeText(AlarmEditorActivity.this, "Alarm Deleted", Toast.LENGTH_SHORT).show();
@@ -170,9 +233,10 @@ public class AlarmEditorActivity extends Activity {
             }
         });
 
-        btnBack.setOnClickListener(new View.OnClickListener() {
+        btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopTestSound();
                 finish();
             }
         });
@@ -180,6 +244,7 @@ public class AlarmEditorActivity extends Activity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopTestSound();
                 saveAlarm();
             }
         });
@@ -199,63 +264,141 @@ public class AlarmEditorActivity extends Activity {
         }
     }
 
+    private void updateSoundButtons() {
+        highlightSoundBtn(btnSoundDigital, "digital".equals(selectedSound));
+        highlightSoundBtn(btnSoundSiren, "siren".equals(selectedSound));
+        highlightSoundBtn(btnSoundReveille, "reveille".equals(selectedSound));
+        highlightSoundBtn(btnSoundBuzzer, "buzzer".equals(selectedSound));
+    }
+
+    private void highlightSoundBtn(Button btn, boolean selected) {
+        if (selected) {
+            btn.setBackgroundColor(Color.parseColor("#F2F2F2"));
+            btn.setTextColor(Color.parseColor("#0F0F10"));
+        } else {
+            btn.setBackgroundColor(Color.parseColor("#1C1C1F"));
+            btn.setTextColor(Color.parseColor("#808086"));
+        }
+    }
+
+    private void toggleTestSound() {
+        if (testPlayer != null && testPlayer.isPlaying()) {
+            stopTestSound();
+        } else {
+            startTestSound();
+        }
+    }
+
+    private void startTestSound() {
+        stopTestSound();
+        int soundRes = R.raw.alarm_digital_screamer;
+        if ("siren".equals(selectedSound)) {
+            soundRes = R.raw.alarm_nuclear_siren;
+        } else if ("reveille".equals(selectedSound)) {
+            soundRes = R.raw.alarm_military_reveille;
+        } else if ("buzzer".equals(selectedSound)) {
+            soundRes = R.raw.alarm_emergency_buzzer;
+        }
+
+        try {
+            testPlayer = MediaPlayer.create(this, soundRes);
+            if (testPlayer != null) {
+                testPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                testPlayer.setLooping(true);
+                testPlayer.start();
+                btnTestSound.setText("[ ■ STOP ]");
+                btnTestSound.setBackgroundColor(Color.parseColor("#FF5555"));
+            }
+        } catch (Exception e) {}
+    }
+
+    private void restartTestSoundIfPlaying() {
+        if (testPlayer != null && testPlayer.isPlaying()) {
+            startTestSound();
+        }
+    }
+
+    private void stopTestSound() {
+        if (testPlayer != null) {
+            try {
+                if (testPlayer.isPlaying()) testPlayer.stop();
+                testPlayer.release();
+            } catch (Exception e) {}
+            testPlayer = null;
+        }
+        if (btnTestSound != null) {
+            btnTestSound.setText("[ ▶ TEST ]");
+            btnTestSound.setBackgroundColor(Color.parseColor("#252528"));
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopTestSound();
+    }
+
     private void updateMissionButtons() {
-        highlightButton(btnMissionMath, selectedMission == MissionType.MATH);
-        highlightButton(btnMissionShake, selectedMission == MissionType.SHAKE);
-        highlightButton(btnMissionTyping, selectedMission == MissionType.TYPING);
-        highlightButton(btnMissionNormal, selectedMission == MissionType.NORMAL);
+        highlightBtn(btnMissionMath, selectedMission == MissionType.MATH);
+        highlightBtn(btnMissionShake, selectedMission == MissionType.SHAKE);
+        highlightBtn(btnMissionTyping, selectedMission == MissionType.TYPING);
+        highlightBtn(btnMissionNormal, selectedMission == MissionType.NORMAL);
 
         LinearLayout countContainer = (LinearLayout) findViewById(R.id.countContainer);
-        if (selectedMission == MissionType.MATH || selectedMission == MissionType.SHAKE) {
+        TextView tvCountLabel = (TextView) findViewById(R.id.tvCountLabel);
+
+        if (selectedMission == MissionType.MATH) {
             countContainer.setVisibility(View.VISIBLE);
-            TextView tvCountLabel = (TextView) findViewById(R.id.tvCountLabel);
-            if (selectedMission == MissionType.MATH) {
-                tvCountLabel.setText("PROBLEMS COUNT:");
-                btnCount1.setText("[ 1x ]");
-                btnCount3.setText("[ 3x ]");
-                btnCount5.setText("[ 5x ]");
-            } else {
-                tvCountLabel.setText("SHAKE COUNT:");
-                btnCount1.setText("[ 10x ]");
-                btnCount3.setText("[ 30x ]");
-                btnCount5.setText("[ 50x ]");
-            }
+            tvCountLabel.setText("MATH PROBLEMS COUNT:");
+            btnCount1.setText("[ 1x ]");
+            btnCount3.setText("[ 3x ]");
+            btnCount5.setText("[ 5x ]");
+        } else if (selectedMission == MissionType.SHAKE) {
+            countContainer.setVisibility(View.VISIBLE);
+            tvCountLabel.setText("SHAKE TARGET COUNT:");
+            btnCount1.setText("[ 10x ]");
+            btnCount3.setText("[ 30x ]");
+            btnCount5.setText("[ 50x ]");
         } else {
             countContainer.setVisibility(View.GONE);
         }
     }
 
     private void updateCountButtons() {
-        highlightButton(btnCount1, selectedCount == 1);
-        highlightButton(btnCount3, selectedCount == 3);
-        highlightButton(btnCount5, selectedCount == 5);
+        highlightBtn(btnCount1, selectedCount == 1);
+        highlightBtn(btnCount3, selectedCount == 3);
+        highlightBtn(btnCount5, selectedCount == 5);
     }
 
-    private void highlightButton(Button b, boolean active) {
-        if (active) {
-            b.setBackgroundColor(Color.parseColor("#F2F2F2"));
-            b.setTextColor(Color.parseColor("#0F0F10"));
+    private void highlightBtn(Button btn, boolean selected) {
+        if (selected) {
+            btn.setBackgroundColor(Color.parseColor("#F2F2F2"));
+            btn.setTextColor(Color.parseColor("#0F0F10"));
         } else {
-            b.setBackgroundColor(Color.parseColor("#1C1C1F"));
-            b.setTextColor(Color.parseColor("#808086"));
+            btn.setBackgroundColor(Color.parseColor("#1C1C1F"));
+            btn.setTextColor(Color.parseColor("#808086"));
         }
     }
 
     private void saveAlarm() {
         alarm.hour = timePicker.getCurrentHour();
         alarm.minute = timePicker.getCurrentMinute();
-        alarm.label = etLabel.getText().toString().trim();
-        if (alarm.label.isEmpty()) alarm.label = "Cosmic Alarm";
-
+        String lbl = etLabel.getText().toString().trim();
+        alarm.label = lbl.isEmpty() ? "Alarm" : lbl;
         System.arraycopy(selectedDays, 0, alarm.repeatDays, 0, 7);
+        alarm.soundType = selectedSound;
         alarm.missionType = selectedMission;
         alarm.missionCount = selectedCount;
         alarm.enabled = true;
 
-        storage.updateAlarm(alarm);
-        AlarmScheduler.rescheduleAll(this);
+        if (isNew) {
+            storage.saveAlarm(alarm);
+        } else {
+            storage.updateAlarm(alarm);
+        }
 
-        Toast.makeText(this, "Alarm Saved for " + alarm.formattedTime(), Toast.LENGTH_SHORT).show();
+        AlarmScheduler.rescheduleAll(this);
+        Toast.makeText(this, "Alarm set for " + alarm.formattedTime(), Toast.LENGTH_SHORT).show();
         finish();
     }
 }
