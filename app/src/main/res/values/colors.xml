@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#0F0F10</color>
+    <color name="header_bg">#141416</color>
+    <color name="surface">#171719</color>
+    <color name="input_bg">#1C1C1F</color>
+    <color name="divider">#252528</color>
+    <color name="text_primary">#F2F2F2</color>
+    <color name="text_secondary">#808086</color>
+    <color name="btn_border">#323237</color>
+</resources>

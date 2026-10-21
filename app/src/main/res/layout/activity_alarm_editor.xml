@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/editorRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/header_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="[&lt; back]"
+            android:background="@null"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="[set alarm]"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:gravity="center"/>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="[save]"
+            android:background="@null"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- TimePicker -->
+            <TimePicker
+                android:id="@+id/timePicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Alarm Label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LABEL:"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/etLabel"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@color/input_bg"
+                android:textColor="@color/text_primary"
+                android:hint="Alarm Label"
+                android:textColorHint="@color/text_secondary"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:singleLine="true"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Repeat Days -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="REPEAT DAYS:"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <Button android:id="@+id/btnDaySun" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="S" android:textSize="12sp" android:layout_marginRight="2dp"/>
+                <Button android:id="@+id/btnDayMon" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="M" android:textSize="12sp" android:layout_marginRight="2dp"/>
+                <Button android:id="@+id/btnDayTue" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="T" android:textSize="12sp" android:layout_marginRight="2dp"/>
+                <Button android:id="@+id/btnDayWed" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="W" android:textSize="12sp" android:layout_marginRight="2dp"/>
+                <Button android:id="@+id/btnDayThu" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="T" android:textSize="12sp" android:layout_marginRight="2dp"/>
+                <Button android:id="@+id/btnDayFri" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="F" android:textSize="12sp" android:layout_marginRight="2dp"/>
+                <Button android:id="@+id/btnDaySat" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="S" android:textSize="12sp"/>
+            </LinearLayout>
+
+            <!-- Mission Selection -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="WAKE-UP MISSION:"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <Button android:id="@+id/btnMissionMath" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Math ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
+                <Button android:id="@+id/btnMissionShake" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Shake ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
+                <Button android:id="@+id/btnMissionTyping" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Type ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
+                <Button android:id="@+id/btnMissionNormal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ Standard ]" android:textSize="12sp"/>
+            </LinearLayout>
+
+            <!-- Mission Parameters (Count) -->
+            <LinearLayout
+                android:id="@+id/countContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tvCountLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PROBLEMS COUNT:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:orientation="horizontal">
+
+                    <Button android:id="@+id/btnCount1" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 1x ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
+                    <Button android:id="@+id/btnCount3" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 3x ]" android:textSize="12sp" android:layout_marginRight="4dp"/>
+                    <Button android:id="@+id/btnCount5" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="[ 5x ]" android:textSize="12sp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Delete Button -->
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="[ DELETE ALARM ]"
+                android:textColor="#FF5555"
+                android:background="@color/surface"
+                android:textSize="13sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="24dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
