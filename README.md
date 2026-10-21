@@ -3,7 +3,7 @@
 > A retro-cosmic smart alarm clock with Alarmy-style wake-up missions, 1-bit pixel art, Space Grotesk typography, and a live animated full moon with craters and twinkling stars.
 
 <p align="center">
-  <img src="https://github.com/warumpas-ops/cosmos-bb10/releases/download/v1.2.0/cosmos_full_moon_preview.gif" alt="Cosmos App Preview" width="480" />
+  <img src="assets/cosmos_full_moon_preview.gif" alt="Cosmos App Preview" width="480" />
 </p>
 
 ---
